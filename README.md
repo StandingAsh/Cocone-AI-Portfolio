@@ -1,26 +1,94 @@
 # 박선재 AI 활용 포트폴리오
 코코네 서버 엔지니어 지원자 박선재의 AI 활용 포트폴리오입니다.
 
-# 1. AI를 활용해 해결한 문제 또는 자동화 사례
-## 문제 상황
-- 매주 100개 이상의 고객 문의를 수동으로 분류하는 데 평균 2시간 소요
+# 프로젝트 1 - 악성코드 분석 보고서 웹사이트
+### 기술 스택
+- Frontend: Next.js
+- Backend: Spring Boot + FastAPI
+- ML: XGBoost
+- LLM: OpenAI gpt-4o-mini
+- 배포: AWS(EC2, S3, RDS, Code Deploy)
 
-## AI 활용 방법
-- Claude API를 활용한 자동 분류 시스템 구축
-- 프롬프트 엔지니어링으로 카테고리 분류 정확도 향상
+### 기여도
+- 전체 아키텍처 설계 100%
+- 백엔드 코드 구현 60% + AI 보조 40%
+- 데이터 수집 및 전처리 33%
+- 머신러닝 모델 학습 50%
+- LLM 프롬프트 설계 100%
 
-## 개선 결과
+### Github 링크
+- [https://github.com/Jae-Ju-Do/backend-fastapi](https://github.com/Jae-Ju-Do/backend-fastapi)
+
+## 1. AI를 활용한 자동화
+### 상황
+- 악성 프로그램(Malware)을 분석하는 과정은 시간과 노력의 소요가 매우 큼
+  - **정적 분석**: 파일의 헤더, 리소스 등을 조사
+  - **동적 분석**: 가상 환경에서 실행 후 행위를 모니터링
+  - 결과를 종합하여 MITRE ATT&CK 프레임워크에 매
+- 이 과정 중 **정적 분석**을 자동화 하고자 함
+
+### AI 활용 방법
+- XGBoost 기반 머신러닝 모델로 악성 여부를 우선 검사
+- Ghidra를 이용해 C언어로 디컴파일 → OpenAI API를 호출해 디컴파일된 코드 분석
+
+### ML 학습 과정
+#### 데이터 수집
+- Malware Bazaar에서 악성 PE 파일 다운로드 (총 42만개)
+- 헤더 파일 정보 추출 → 칼럼으로 활용
+- Virus Total의 Category 정보를 라벨 정보로 활용
+
+#### 데이터 전처리
+1. 결측치
+    - 누락된 데이터를 식별하고 적절히 보완하여 분석 정확도 향상
+    - Heatmap으로 결측치 분포를 시각화
+<img width="5453" height="5967" alt="missing_data_ratio_heatmap" src="https://github.com/user-attachments/assets/33138704-371c-45a0-bfd0-7c3cb32e5d9a" />
+
+2. 엔트로피
+   - 각 칼럼의 불확실성을 분석하여 비효율적인 칼럼 제거
+   - Heatmap으로 칼럼별 엔트로피 값을 시각화
+<img width="5440" height="5967" alt="entropy_heatmap(기본)" src="https://github.com/user-attachments/assets/8c218147-2fd3-42c9-8854-cd3f376d0e57" />
+
+#### 모델 선정 및 학습
+- 정규화: Normalizer(벡터 크기를 기준으로 정규화)
+- 표준화: StandardScaler(평균 = 0, 표준편차 = 1)
+- 아래 표와 같이 10개의 모델 선정
+
+| 모델 이름 | 파라미터 값 |
+| --- | --- |
+| **RandomForest** | `n_estimators: [100, 200]`<br>`max_depth: [None, 10, 20`<br>`min_samples_splict : [2, 5]` |
+| **DecisionTree** | `max_depth: [None, 10, 20]`<br>`min_samples_split: [2, 5]` |
+| **XGBoost** | `n_estimators: [200, 250, 300]`<br>`learning_rate: [0.15, 0.2, 0.25]`<br>`max_depth: [6, 7, 9]`<br>`subsample: [0.9, 1.0]`<br>`gamma: [0, 0.1, 0.2]`<br>`tree_method: ['hist']` |
+| **GradientBoosting** | `n_estimators: [100, 200]`<br>`learning_rate: [0.05, 0.1]`<br>`max_depth: [3, 5]` |
+| **LogisticRegression** | `C: [0.1, 1, 10]`<br>`solver: ['liblinear']` |
+| **LGBM** | `n_estiimators: [100, 200]`<br>`learning_rate: [0.05, 0.1]`<br>`max_depth: [-1, 10, 20]` |
+| **CatBoost** | `iterations: [100, 200]`<br>`learning_rate: [0.05, 0.1]`<br>`depth: [6, 8]` |
+| **ExtraTrees** | `n_estimtors: [100, 200]`<br>`max_depth: [None, 10, 20]` |
+| **KNN** | `n_neighbors: [3, 5, 7]`<br>`weights: ['uniform', 'distance']` |
+| **GaussianNB** | `기본 값만 사용` |
+| **Bagging** | `n_estimaotrs: [10, 50]`<br>`max_samples: [0.5, 1.0]` |
+
+
+### 성능 측정
+#### 머신러닝 모델
+- 분석 정확도: 96%
+
+#### 보고서 정확성
+- Atomic Red Team의 d
+
+### 결과 및 의의
 - 처리 시간: 2시간 → 10분 (92% 단축)
 - 분류 정확도: 95%
 
+## 2. LLM 기반 기능 개발
 
-# 2. 실제 사용한 프롬프트 또는 프롬프트 템플릿
-## 프롬프트 템플릿
 
-### 초안
+## 3. 사용한 프롬프트 템플릿
+### 프롬프트 템플릿
+
+#### 초안
 "이 코드를 리팩토링해줘"
 
-### 개선 후
+#### 개선 후
 """
 다음 Python 코드를 리팩토링해주세요:
 - 목표: 가독성 향상 및 성능 최적화
@@ -34,129 +102,7 @@
 - 응답 정확도 70% → 95%
 - 원하는 형식의 답변 획득률 상승
 
-# 3. AI로 생성한 초기 산출물 vs 본인이 수정한 최종 산출물
-## AI 생성 초안
-[AI가 생성한 코드 스크린샷 또는 코드 블록]
+# 프로젝트 2 - 수의과 마취 기록 보조 앱
+## 1. AI를 활용한 프로토타입 제작 사례
 
-## 문제점
-1. 에러 핸들링 부재
-2. 메모리 누수 가능성
-3. 비효율적인 알고리즘 사용
-
-## 최종 수정본
-[수정 후 코드]
-
-## 주요 수정 사항
-- try-except 구문 추가
-- 컨텍스트 매니저 활용
-- O(n²) → O(n log n) 최적화
-
-# 4. AI를 개발 워크플로에 통합한 사례
-## 통합 사례: GitHub Actions + AI 코드 리뷰
-
-### 구조
-1. PR 생성 시 자동으로 Claude API 호출
-2. 변경사항 분석 및 리뷰 코멘트 생성
-3. GitHub API를 통해 자동 코멘트 등록
-
-### 효과
-- 코드 리뷰 시간 50% 단축
-- 일관된 코드 품질 유지
-- 팀원들의 리뷰 부담 경감
-
-[GitHub Actions Workflow 파일 링크]
-
-# 5. AI의 한계를 겪고 해결한 경험
-## 문제 상황
-Claude가 존재하지 않는 라이브러리 함수를 제안
-
-## 해결 과정
-1. AI 응답에 대한 검증 프로세스 구축
-2. 공식 문서 자동 참조 시스템 추가
-3. 테스트 코드 자동 생성 및 실행
-
-## 결과
-- 환각 문제 발생률 80% 감소
-- 신뢰도 높은 코드 생성
-
-# 6. AI를 활용한 프로토타입 제작 사례
-## 프로토타입: AI 기반 일정 관리 앱
-
-### 개발 기간
-48시간 (2일)
-
-### AI 활용 범위
-- UI 컴포넌트 초안: Claude 생성 (80%) + 수동 조정 (20%)
-- API 엔드포인트 설계: Claude 제안 → 검토 및 수정
-- 테스트 코드: GitHub Copilot 활용 (60%)
-
-### 본인 기여
-- 아키텍처 설계: 100%
-- 비즈니스 로직 구현: 70%
-- 통합 및 배포: 100%
-
-[데모 링크] | [GitHub Repository]
-
-# 7. LLM 기반 기능 개발 경험
-## 프로젝트: 악성코드 분석 보고서 웹사이트
-
-### 기술 스택
-- LLM: OpenAI GPT-4o-mini API
-- Backend: Springboot + FastAPI
-- Framework: LangChain
-
-### 프로젝트 기여도
-- 프롬프트 엔지니어링 (60%)
-- 전체 파이프라인 설계 (100%)
-- 백엔드 구현 (100%)
-
-### 주요 구현 사항
-
-#### 1. 워크 플로우
-1. 사용자가 악성 PE 파일을 업로드
-2. Ghidra를 통해 디컴파일 → C 언어 파일(.c) 생성
-3. c언어 코드 최적화 후 LLM 분석 요청
-4. LLM 답변 파싱 → PDF 보고서 반환
-
-
-#### 2. 토큰 제어
-- 입력 토큰 제한: 최대 128,000 토큰
-- 응답 길이 제어: max_tokens=4000
-- 컨텍스트 윈도우 관리: 정규식 이용 C 코드 최적화 → 입력 토큰 수 50% 감소
-
-```python
-def code_optimizer(c_code):
-    functions = extract_function(c_code)
-    merge_code = merge_function(functions)
-    return merge_code
-
-def extract_function(code):
-    pattern = re.compile(r'/\* Function: (\w+) \*/(.*?)\n(?=/\* Function: |\Z)', re.DOTALL)
-    functions = pattern.findall(code)
-
-    cleaned_functions = []
-    for func_name, func_body in functions:
-        cleaned_functions.append((func_name, clean_function_body(func_body)))
-
-    return cleaned_functions
-
-def merge_function(function):
-    merge_code = ""
-    for func_name, func_body in function:
-        merge_code = merge_code + func_body + "\n\n"
-
-    return merge_code
-```
-
-
-#### 4. 비용 통제
-- 월 예산: $200
-- 캐싱 전략으로 API 호출 30% 감소
-- 실제 비용: $150/월 (25% 절감)
-
-### 성과
-- 문서 검색 시간: 5분 → 30초
-- 사용자 만족도: 4.5/5.0
-- ROI: 업무 시간 절감으로 월 $2,000 상당 효과
-
-
+## 2. AI로 생성한 초기 산출물 vs 본인이 수정한 최종 산출물
