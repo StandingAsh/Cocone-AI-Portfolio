@@ -1,24 +1,29 @@
 # 박선재 AI 활용 포트폴리오
 코코네 서버 엔지니어 지원자 박선재의 AI 활용 포트폴리오입니다.
 
+> 본 포트폴리오에 사용된 샘플은 Malware Bazaar 등 **공개 데이터셋**을 활용하였으며, 폐쇄된 가상 환경 내에서 안전하게 진행되었습니다.
+
 # 프로젝트 - 악성코드 분석 보고서 웹사이트
 ### 기술 스택
-- Frontend: Next.js
-- Backend: Spring Boot + FastAPI
-- ML: GridSearchCV
-- LLM: OpenAI gpt-4o-mini
-- 디컴파일: Ghidra
-- 배포: AWS(EC2, S3, RDS, Code Deploy)
+- **Frontend:** Next.js
+- **Backend:** Spring Boot + FastAPI
+- **ML:** GridSearchCV, XGBoost, LGBM, CatBoost
+- **LLM:** OpenAI gpt-4o-mini
+- **디컴파일**: Ghidra
+- **배포**: AWS(EC2, S3, RDS, Code Deploy)
 
 ### 기여도
-- 전체 아키텍처 설계 100%
-- 백엔드 코드 구현 60% + AI 보조 40%
-- 데이터 수집 및 전처리 33%
-- 머신러닝 모델 학습 50%
-- LLM 프롬프트 엔지니어링 100%
+- **전체 아키텍처 설계** 100%
+- **백엔드 코드 구현** 60% + AI 보조 40%
+- **데이터 수집 및 전처리** 33%
+- **머신러닝 모델 학습** 50%
+- **LLM 프롬프트 엔지니어링** 100%
 
 ### Github 링크
 - [https://github.com/Jae-Ju-Do/backend-fastapi](https://github.com/Jae-Ju-Do/backend-fastapi)
+- [https://github.com/Jae-Ju-Do/backend-springboot](https://github.com/Jae-Ju-Do/backend-springboot)
+
+---
 
 ## 1. AI를 활용한 자동화
 ### 상황
@@ -26,11 +31,14 @@
   - **정적 분석**: 파일의 헤더, 리소스 등을 조사
   - **동적 분석**: 가상 환경에서 실행 후 행위를 모니터링
   - 결과를 종합하여 MITRE ATT&CK 프레임워크에 매
-- 이 과정 중 **정적 분석**을 자동화 하고자 함
+
+> 이 과정 중 **정적 분석**을 자동화 하고자 함
 
 ### AI 활용 방법
-- XGBoost 기반 머신러닝 모델로 악성 여부를 우선 검사
-- Ghidra를 이용해 C언어로 디컴파일 → OpenAI API를 호출해 디컴파일된 코드 분석
+- 학습된 **머신러닝 모델**로 악성 여부를 우선 검사
+- Ghidra를 이용해 C언어로 디컴파일 → **OpenAI API**를 호출해 디컴파일된 코드 분석
+
+---
 
 ### ML 학습 과정
 #### 데이터 수집
@@ -53,7 +61,7 @@
 #### 모델 선정 및 학습
 - 정규화: Normalizer(벡터 크기를 기준으로 정규화)
 - 표준화: StandardScaler(평균 = 0, 표준편차 = 1)
-- 아래 표와 같이 10개의 모델에 대해 GridSearchCV 이용해 학습 진행
+- 아래 표와 같이 10개의 모델에 대해 **GridSearchCV** 이용해 학습 진행
 
 | 모델 이름 | 파라미터 값 |
 | --- | --- |
@@ -72,13 +80,25 @@
 
 #### 성능 측정
 - 모델, 엔트로피 처리 방식 별 정확도 측정
-- 정확도가 높은 3개 모델을 이용해 **Voting System**으로 악성 여부 판별
 - 정확도 분석 결과:
 <img width="1045" height="538" alt="image" src="https://github.com/user-attachments/assets/ecfbfc42-2159-4168-abfb-141659e7ed0d" />
 
+- 신뢰도가 높은 3개 모델 선정
+- 선정된 모델들의 **Ensemble Voting** → False Negative 방지
+
+| 선정 모델 | 최고 테스트 정확도 | 주요 선정 이유 |
+| --- | --- | ---|
+| **LGBM** | 98.6% | 전체 모델 중 최고 성능<br>처리 속도가 빠르고 대량 데이터 처리에 능함 |
+| **XGBoost** | 98.5% | 과적합 방지 규제가 뛰어남 → 가장 안정적인 일반화 성능 |
+| **CatBoost** | 98.4% | 범주형 변수 처리에 최적화 → 헤더 정보 학습에 최적화 |
+
+---
+
 ### 성과
-- 악성코드 판별 정확도 98%
-- 정확도 높은 모델들의 Voting으로 낮은 위음성률
+- 악성코드 판별 정확도 **98% 확보**
+- 정확도 높은 모델들의 Voting으로 **낮은 위음성률**
+
+---
 
 ## 2. LLM 기반 기능 개발
 
@@ -129,14 +149,40 @@ def merge_function(function):
   - [https://arxiv.org/abs/2411.14905](https://arxiv.org/abs/2411.14905)
   - [https://medium.com/d-classified/utilizing-generative-ai-for-reverse-engineering-31cbcd435e84](https://medium.com/d-classified/utilizing-generative-ai-for-reverse-engineering-31cbcd435e84)
 
+---
 
 ## 3. 사용한 프롬프트
 ### 프롬프트 엔지니어링 과정
 
 #### 초안
 - C 코드, 악성 코드 유형, JSON 포맷을 **변수화**하여 관리
-- JSON 포맷 내부에 **항목 타이틀**, **포함할 내용**을 명시
 - 실행할 **명령**을 정의하여 단계적으로 분석하도록 유도
+```python
+def get_prompt(report_code, malware_type, report_format):
+    prompt = f'''Please ignore all previous instructions.
+    You are an advanced malware analysis assistant. Your expertise is in analyzing C source code derived from decompiled exe files for potential malicious behavior using the MITRE ATT&CK framework.
+
+    # Variables
+    [CODE] = {report_code}
+    [TYPE] = {malware_type}
+    [FORMAT] = {report_format}
+
+    # Commands
+    [C1] = Please ignore all previous instructions.
+    [C2] = You must respond strictly in JSON format to match [FORMAT]. Do not provide any other response.
+    [C3] = Fully analyze the provided [CODE], which is a exe decompiled by Ghidra. Then, generate a structured malware analysis report based on [FORMAT] and malware type based on [TYPE].
+
+    FOLLOW ALL THE ABOVE COMMANDS STRICTLY.
+    DO NOT INCLUDE ANY ADDITIONAL COMMENTS OR CONFIRMATIONS.
+    Look at the value descriptions in JSON format and replace them with the correct values. Avoid using newline characters such as \\n or \\.
+
+    # Run
+    $ run [C1] [C2] [C3]
+    '''
+    return prompt
+```
+
+- JSON 포맷 내부에 **항목 타이틀**, **포함할 내용**을 명시
 ```python
 def get_format():
     return {
@@ -164,90 +210,17 @@ def get_format():
             }
         ]
     }
-
-
-def get_prompt(report_code, malware_type, report_format):
-    prompt = f'''Please ignore all previous instructions.
-    You are an advanced malware analysis assistant. Your expertise is in analyzing C source code derived from decompiled exe files for potential malicious behavior using the MITRE ATT&CK framework.
-
-    # Variables
-    [CODE] = {report_code}
-    [TYPE] = {malware_type}
-    [FORMAT] = {report_format}
-
-    # Commands
-    [C1] = Please ignore all previous instructions.
-    [C2] = You must respond strictly in JSON format to match [FORMAT]. Do not provide any other response.
-    [C3] = Fully analyze the provided [CODE], which is a exe decompiled by Ghidra. Then, generate a structured malware analysis report based on [FORMAT] and malware type based on [TYPE].
-
-    FOLLOW ALL THE ABOVE COMMANDS STRICTLY.
-    DO NOT INCLUDE ANY ADDITIONAL COMMENTS OR CONFIRMATIONS.
-    Look at the value descriptions in JSON format and replace them with the correct values. Avoid using newline characters such as \\n or \\.
-
-    # Run
-    $ run [C1] [C2] [C3]
-    '''
-    return prompt
 ```
 
+---
+
 #### 개선 후
-- JSON 포맷 내부의 설명을 구체화
-- 각 변수에 구체화된 설명을 추가
+- 각 변수에 **구체화된 설명**을 추가
 - 사용자의 배경 지식 수준 맞춤형 보고서 생성을 위해 [LEVEL] 변수를 추가
 - [LEVEL]이 분석 내용에 영향을 주지 않도록 강조하여 설명
-- Command를 run 하는 대신 Instruction을 순서대로 명시
+- Command를 run 하는 대신 **Instruction**을 순서대로 명시
 
 ```python
-def get_format():
-    return {
-        "Program Overview": {
-            "Description": "[string] Analyze the provided source code. Describe the main purpose of the program based strictly on the actual functionality implemented in the code. Do not infer or guess based on naming conventions or incomplete structures. Only include what can be definitively determined from the code itself."
-        },
-        "Malware Type": {
-            "Malware Type": [
-                "[list of strings] Analyze the provided source code and identify possible malware type(s) based on its behavior. "
-                "Select from the following list only: Trojan, Ransomware, Worm, Rootkit, Adware, Spyware, Botnet, Keylogger, Backdoor, Virus, Phishing, Fileless Malware, Dropper, DDoS. "
-                "If the type cannot be determined, respond with 'Unknown'."
-						    "If the code is clearly benign and shows no malicious behavior, respond with 'Normal'. "
-                "You may select multiple types if the behavior matches more than one."
-            ]
-        },
-        "MITRE ATT&CK TTPs": {
-		        """Based on the code behavior, identify the relevant MITRE ATT&CK techniques grouped by their associated tactics. 
-               Use **only the latest valid MITRE ATT&CK Technique IDs** as defined in the official MITRE ATT&CK database (https://attack.mitre.org/techniques/enterprise/).
-               For each tactic, list the corresponding technique IDs along with a brief explanation of why each technique applies. 
-               The techniques should be grouped under the tactics and the explanation should be specific to how they relate to the identified malware behavior. 
-               Select Tactic Name from the following list : Collection (TA0009), Command and Control (TA0011), Credential Access (TA0006), Defense Evasion (TA0005), Discovery (TA0007), Execution (TA0002), Exfiltration (TA0010), Impact (TA0040), Initial Access (TA0001), Lateral Movement (TA0008), Persistence (TA0003), Privilege Escalation (TA0004), Reconnaissance (TA0043), Resource Development (TA0042).
-               Do **not** include tactics from the list that do **not** apply to the analyzed code behavior.
-               Only include tactics and their techniques that are actually relevant.
-               Follow the format given below"""
-            "Tactic Name": [
-                {
-                    "technique_id": "T####",
-                    "description": "[string] explain technique_id"
-                },
-                {
-                    "technique_id": "...",
-                    "description": "..."
-                }
-            ],
-        },
-        "Malicious Code Behaviors": [
-            { 
-                "code_snippet": "[string] Relevant C code block from the given code, formatted in Markdown (```c ... ```)",
-                "analysis": "[Provide a detailed explanation including the technical mechanism, system impact, potential risks, attacker’s exploitation methods (e.g., persistence, evasion), related security threats and recommended countermeasures in a professional and thorough manner.]"
-            },
-            {
-                "code_snippet": "...",
-                "analysis": "..."
-            }
-        ],
-        "Conclusion": {
-            "description": "[list of strings] This value provides a follow-up response plan and guide on how to deal with the malicious program that the user has finally analyzed. This can be multiple, so provide it in the form of a Python array with strings as elements. Reference links or materials are also included as a guide."
-        }
-    }
-
-
 def get_prompt(CODE, LEVEL, SHA256):
     prompt = f"""You are a highly skilled malware analysis expert.
     Your task is to analyze decompiled C code ([CODE]) obtained through Ghidra, detect malicious behaviors, and generate a report based on the MITRE ATT&CK framework.
@@ -315,10 +288,64 @@ def get_prompt(CODE, LEVEL, SHA256):
     return prompt
 ```
 
+- JSON 포맷 내부의 설명을 구체화
+```python
+def get_format():
+    return {
+        "Program Overview": {
+            "Description": "[string] Analyze the provided source code. Describe the main purpose of the program based strictly on the actual functionality implemented in the code. Do not infer or guess based on naming conventions or incomplete structures. Only include what can be definitively determined from the code itself."
+        },
+        "Malware Type": {
+            "Malware Type": [
+                "[list of strings] Analyze the provided source code and identify possible malware type(s) based on its behavior. "
+                "Select from the following list only: Trojan, Ransomware, Worm, Rootkit, Adware, Spyware, Botnet, Keylogger, Backdoor, Virus, Phishing, Fileless Malware, Dropper, DDoS. "
+                "If the type cannot be determined, respond with 'Unknown'."
+						    "If the code is clearly benign and shows no malicious behavior, respond with 'Normal'. "
+                "You may select multiple types if the behavior matches more than one."
+            ]
+        },
+        "MITRE ATT&CK TTPs": {
+		        """Based on the code behavior, identify the relevant MITRE ATT&CK techniques grouped by their associated tactics. 
+               Use **only the latest valid MITRE ATT&CK Technique IDs** as defined in the official MITRE ATT&CK database (https://attack.mitre.org/techniques/enterprise/).
+               For each tactic, list the corresponding technique IDs along with a brief explanation of why each technique applies. 
+               The techniques should be grouped under the tactics and the explanation should be specific to how they relate to the identified malware behavior. 
+               Select Tactic Name from the following list : Collection (TA0009), Command and Control (TA0011), Credential Access (TA0006), Defense Evasion (TA0005), Discovery (TA0007), Execution (TA0002), Exfiltration (TA0010), Impact (TA0040), Initial Access (TA0001), Lateral Movement (TA0008), Persistence (TA0003), Privilege Escalation (TA0004), Reconnaissance (TA0043), Resource Development (TA0042).
+               Do **not** include tactics from the list that do **not** apply to the analyzed code behavior.
+               Only include tactics and their techniques that are actually relevant.
+               Follow the format given below"""
+            "Tactic Name": [
+                {
+                    "technique_id": "T####",
+                    "description": "[string] explain technique_id"
+                },
+                {
+                    "technique_id": "...",
+                    "description": "..."
+                }
+            ],
+        },
+        "Malicious Code Behaviors": [
+            { 
+                "code_snippet": "[string] Relevant C code block from the given code, formatted in Markdown (```c ... ```)",
+                "analysis": "[Provide a detailed explanation including the technical mechanism, system impact, potential risks, attacker’s exploitation methods (e.g., persistence, evasion), related security threats and recommended countermeasures in a professional and thorough manner.]"
+            },
+            {
+                "code_snippet": "...",
+                "analysis": "..."
+            }
+        ],
+        "Conclusion": {
+            "description": "[list of strings] This value provides a follow-up response plan and guide on how to deal with the malicious program that the user has finally analyzed. This can be multiple, so provide it in the form of a Python array with strings as elements. Reference links or materials are also included as a guide."
+        }
+    }
+```
+
+---
+
 ### 개선 효과
-- JSON 형식 일관성을 99% 이상 유지
-- MITRE ATT&CK 태그 정보 정확도 66% → 87.5%까지 향상
-- 수준 맞춤 보고서로 사용자 만족도 증가
+- JSON 형식 일관성을 **99% 이상 유지**
+- MITRE ATT&CK 태그 정보 정확도 **66% → 87.5%**까지 향상
+- 수준 맞춤 보고서로 **사용자 만족도** 증가
 
 <img width="303" height="336" alt="image" src="https://github.com/user-attachments/assets/f1dfc3a9-0242-4201-88fa-7b2dd1adde50" /> <img width="300" height="336" alt="image" src="https://github.com/user-attachments/assets/62683990-2f10-4057-b1de-e6c7870f4124" />
 
